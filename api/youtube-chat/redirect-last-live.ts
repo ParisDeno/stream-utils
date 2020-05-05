@@ -7,8 +7,10 @@ import {
 } from "https://deno.land/x/lambda/mod.ts";
 
 const YOUTUBE_BASE_URL = "https://youtube.com";
-const CHANNEL_URL = (channelId: string) => `${YOUTUBE_BASE_URL}/channel/${channelId}/live`
-const LIVE_URL = (liveId: string) => `${YOUTUBE_BASE_URL}/live_chat?v=${liveId}&is_popout=1`;
+const CHANNEL_URL = (channelId: string) =>
+  `${YOUTUBE_BASE_URL}/channel/${channelId}/live`;
+const LIVE_URL = (liveId: string) =>
+  `${YOUTUBE_BASE_URL}/live_chat?v=${liveId}&is_popout=1`;
 
 /**
  * http://localhost:3000/api/youtube-chat?channel=UCbwGFj1MoXSko_QgutV4_Cg
@@ -20,14 +22,23 @@ export async function handler(
   const body: { path: string } = JSON.parse(event.body ?? "{}");
   const params = new URLSearchParams(body.path.split("?")[1]);
   const channelId = params.get("channel") ?? "";
+  const debug = params.has("debug");
 
+  let debugObj: {} = { channelId };
+  let debugInfo = "";
   try {
     const liveId = await findLiveId(CHANNEL_URL(channelId));
     const liveUrl = LIVE_URL(liveId);
+    if (debug) {
+      (debugObj = { liveId, liveUrl, ...debugObj });
+      debugInfo = `
+          <br/><pre>${JSON.stringify(debugInfo)}</pre>
+        `;
+    }
 
-    if (params.has('debug')) {
+    if (debug) {
       return {
-        body: `Redirecting to ${liveUrl}`,
+        body: `Redirecting to ${liveUrl}${debugInfo}`,
         headers: {
           "content-type": "text/html; charset=utf-8",
         },
@@ -38,13 +49,13 @@ export async function handler(
     return {
       body: ``,
       headers: {
-        'location': liveUrl
+        "location": liveUrl,
       },
       statusCode: 301,
     };
   } catch (e) {
     return {
-      body: e.message,
+      body: e.message + debugInfo,
       headers: {
         "content-type": "text/html; charset=utf-8",
       },
@@ -64,7 +75,11 @@ async function findLiveId(channelUrl: string): Promise<string> {
   // or if length > 15 (because of mismatch, sometimes we found videos in a playlist)
   // or if a video link with the same id is found (means that this is a past live)
   // or if, again, we have a mismatch
-  if (!liveId || liveId.length > 15 || new RegExp(`watch\\?v=${liveId}`, "gi").test(page) || liveId.includes('/hqdefault.jpg')) {
+  if (
+    !liveId || liveId.length > 15 ||
+    new RegExp(`watch\\?v=${liveId}`, "gi").test(page) ||
+    liveId.includes("/hqdefault.jpg")
+  ) {
     throw new Error("Live ID not found. Is your live set to public?");
   }
 
