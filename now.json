@@ -1,7 +1,12 @@
 {
     "functions": {
-        "api/**/*.ts": {
-            "runtime": "now-deno@0.4.0"
+        "api/youtube-chat/filter-question-script/index.ts": {
+            "runtime": "now-deno@0.4.0",
+            "includeFiles": "assets/**/*"
+        },
+        "api/**/!(assets)/*.ts": {
+            "runtime": "now-deno@0.4.0",
+            "excludeFiles": "assets/**/*"
         }
     },
     "env": {
