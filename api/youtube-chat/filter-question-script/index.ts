@@ -33,6 +33,7 @@ export async function handler(
     body: out,
     headers: {
       "content-type": "application/javascript",
+      "Cache-Control": "s-maxage=1, stale-while-revalidate"
     },
     statusCode: 200,
   };
