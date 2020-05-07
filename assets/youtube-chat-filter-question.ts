@@ -1,5 +1,5 @@
 const YT_MESSAGE_SELECTOR = 'yt-live-chat-text-message-renderer';
-const CUSTOM_QUESTION = '<span class="custom_question">Question</span> ';
+const CUSTOM_QUESTION = '<span class="custom_question">?&gt;</span> ';
 const QUESTION_TRIGGER_REG = /^#question /ig;
 const ITEMS = document.querySelector('#chat #items')!;
 
